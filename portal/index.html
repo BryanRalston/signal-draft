@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project status — SignalDraft</title>
+  <meta name="robots" content="noindex">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Libre+Baskerville&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+  <nav class="site-nav"><div class="container">
+    <a href="../index.html" class="logo">Signal<span>Draft</span></a>
+  </div></nav>
+
+  <main class="gen-layout">
+    <div class="container gen-panel received-panel">
+      <p class="hero-eyebrow">Your project</p>
+      <h1 id="portal-title">Loading…</h1>
+      <p id="portal-summary" style="color:var(--parchment-dim)"></p>
+
+      <div class="portal-status" id="portal-status"></div>
+
+      <div class="received-steps" id="portal-steps"></div>
+
+      <p class="received-note" id="portal-note"></p>
+      <p id="portal-error" class="admin-error" hidden></p>
+    </div>
+  </main>
+
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/portal.js"></script>
+</body>
+</html>

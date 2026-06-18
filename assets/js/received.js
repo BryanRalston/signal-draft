@@ -57,6 +57,26 @@
 
   const note = document.getElementById('received-note');
   if (note) {
-    note.textContent = `Questions before we start? Email ${cfg.contactEmail} — reference ${brief.companyName || 'your company'}.`;
+    let text = `Questions before we start? Email ${cfg.contactEmail} — reference ${brief.companyName || 'your company'}.`;
+    if (brief.clientToken) {
+      const base = (cfg.apiBase || '').replace(/\/$/, '')
+        || (window.location.hostname.includes('github.io') ? '' : window.location.origin);
+      if (!base) {
+        note.textContent = text;
+        return;
+      }
+      const portalUrl = `${base}/portal/?token=${encodeURIComponent(brief.clientToken)}`;
+      text += ` Track status: ${portalUrl}`;
+      const actions = document.querySelector('.received-actions');
+      if (actions && !document.getElementById('received-portal')) {
+        const portal = document.createElement('a');
+        portal.id = 'received-portal';
+        portal.href = portalUrl;
+        portal.className = 'btn btn-secondary';
+        portal.textContent = 'Track your project';
+        actions.insertBefore(portal, actions.firstChild?.nextSibling || null);
+      }
+    }
+    note.textContent = text;
   }
 })();

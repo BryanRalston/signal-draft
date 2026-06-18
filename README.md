@@ -9,11 +9,13 @@ AI-researched survey design for companies. Marketing site + intake wizard + samp
 ## How it works
 
 1. **Customer** completes the research brief (~8 min) at `/create/`
-2. **Web3Forms** emails the brief to Bryan
-3. **Customer** sees a confirmation page (48-hour delivery promise)
-4. **Bryan** runs research + survey design in Grok Heavy, reviews, and delivers
+2. **API** saves project to Supabase (`POST /api/intake`); Web3Forms emails as fallback
+3. **Customer** sees confirmation + optional `/portal/?token=` status link
+4. **Bryan** uses `/admin/` — kanban, copy Grok prompt, update status, deliver
 
-Sample outputs (not live generation): `/create/preview.html?case=csat&sample=1`
+Sample outputs: `/create/preview.html?case=csat&sample=1`
+
+**Scaling setup:** see `SCALE.md` (Supabase + Vercel env vars).
 
 ## V1 includes
 

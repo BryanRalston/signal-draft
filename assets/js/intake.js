@@ -241,10 +241,73 @@
     err.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
+  function apiIntakeEnabled() {
+    if (cfg.useApiIntake === false) return false;
+    if (cfg.apiBase) return true;
+    return !window.location.hostname.includes('github.io');
+  }
+
+  function apiUrl(path) {
+    const base = (cfg.apiBase || '').replace(/\/$/, '');
+    return `${base}${path}`;
+  }
+
+  function storeSubmittedBrief(extra) {
+    sessionStorage.setItem('sd_submitted_brief', JSON.stringify({
+      companyName: data.companyName,
+      contactName: data.contactName,
+      contactEmail: data.contactEmail,
+      useCase: data.useCase || 'csat',
+      submittedAt: new Date().toISOString(),
+      ...extra,
+    }));
+    localStorage.removeItem(cfg.storageKey);
+    window.location.href = 'received.html';
+  }
+
+  async function submitViaApi() {
+    const res = await fetch(apiUrl('/api/intake'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ intake: data, botcheck: '' }),
+    });
+    const out = await res.json();
+    if (!res.ok || !out.success) {
+      throw new Error(out.message || 'API intake failed');
+    }
+    storeSubmittedBrief({
+      clientToken: out.clientToken,
+      projectId: out.projectId,
+      dueAt: out.dueAt,
+    });
+  }
+
+  async function submitViaWeb3Forms(subject, fields) {
+    const body = {
+      access_key: cfg.web3formsKey,
+      subject,
+      from_name: data.contactName || 'SignalDraft intake',
+      replyto: data.contactEmail,
+      botcheck: '',
+      ...fields,
+    };
+    const formData = new FormData();
+    Object.entries(body).forEach(([k, v]) => formData.append(k, v));
+    const res = await fetch(cfg.web3formsUrl, {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      body: formData,
+    });
+    const out = await res.json();
+    if (!out || out.success !== true) {
+      throw new Error(out && out.message ? out.message : 'Submission rejected');
+    }
+    storeSubmittedBrief({});
+  }
+
   async function submitBrief() {
     save();
 
-    // Honeypot: if a bot filled the hidden botcheck field, silently drop.
     const botField = panelEl.querySelector('input[name="botcheck"]');
     if (botField && botField.value) return;
 
@@ -255,43 +318,17 @@
     btnNext.disabled = true;
     btnNext.textContent = 'Sending…';
 
-    const body = {
-      access_key: cfg.web3formsKey,
-      subject,
-      from_name: data.contactName || 'SignalDraft intake',
-      replyto: data.contactEmail,
-      botcheck: '',
-      ...fields,
-    };
-
-    // FormData (multipart) keeps this a "simple" request — no CORS preflight,
-    // which Web3Forms' endpoint requires for browser submissions.
-    const formData = new FormData();
-    Object.entries(body).forEach(([k, v]) => formData.append(k, v));
-
     try {
-      const res = await fetch(cfg.web3formsUrl, {
-        method: 'POST',
-        headers: { Accept: 'application/json' },
-        body: formData,
-      });
-      const out = await res.json();
-
-      if (out && out.success === true) {
-        sessionStorage.setItem('sd_submitted_brief', JSON.stringify({
-          companyName: data.companyName,
-          contactName: data.contactName,
-          contactEmail: data.contactEmail,
-          useCase: data.useCase || 'csat',
-          submittedAt: new Date().toISOString(),
-        }));
-        localStorage.removeItem(cfg.storageKey);
-        window.location.href = 'received.html';
-        return;
+      if (apiIntakeEnabled()) {
+        try {
+          await submitViaApi();
+          return;
+        } catch (apiErr) {
+          if (!cfg.web3formsKey) throw apiErr;
+        }
       }
-      throw new Error(out && out.message ? out.message : 'Submission rejected');
+      await submitViaWeb3Forms(subject, fields);
     } catch (_) {
-      // Do NOT redirect, do NOT clear the draft. Show recoverable fallback.
       btnNext.disabled = false;
       btnNext.textContent = prevLabel;
       showSubmitError(subject, fields);

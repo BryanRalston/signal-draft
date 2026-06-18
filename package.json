@@ -9,7 +9,14 @@
   },
   "scripts": {
     "test": "node tests/e2e.spec.mjs",
+    "test:live": "node tests/live-check.mjs",
     "test:install": "npx playwright install chromium"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1"
+  },
+  "devDependencies": {
+    "playwright": "^1.51.0"
   },
   "repository": {
     "type": "git",

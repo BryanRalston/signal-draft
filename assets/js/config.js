@@ -9,4 +9,8 @@ window.SD_CONFIG = {
   foundingSlots: 10,
   turnaroundHours: 48,
   storageKey: 'sd_intake_v1',
+  /** Leave '' on Vercel (same-origin /api). On GitHub Pages, set to your Vercel URL. */
+  apiBase: '',
+  /** Try Supabase intake API before Web3Forms fallback */
+  useApiIntake: true,
 };
