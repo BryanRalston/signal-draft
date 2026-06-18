@@ -11,12 +11,6 @@ async function readRawBody(req) {
   });
 }
 
-module.exports.config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     res.status(405).json({ success: false, message: 'Method not allowed' });
@@ -73,4 +67,13 @@ module.exports = async (req, res) => {
     console.error('Stripe webhook error:', e);
     res.status(400).json({ success: false, message: e.message || 'Webhook error' });
   }
+};
+
+// Must be attached AFTER the handler assignment above, or it gets wiped.
+// Disables Vercel body parsing so the raw body is available for Stripe
+// signature verification.
+module.exports.config = {
+  api: {
+    bodyParser: false,
+  },
 };
