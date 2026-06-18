@@ -17,9 +17,7 @@ AI-researched survey design for companies. Marketing site + intake wizard + temp
 
 ## Before launch checklist
 
-1. Update `assets/js/config.js`:
-   - `contactEmail` — your real email
-   - `formSubmitUrl` — `https://formsubmit.co/YOUR@EMAIL.com` (activate via FormSubmit confirmation email)
+1. FormSubmit activation: submit a test brief once; click the activation link FormSubmit emails to `bryan.ralston@rocketmail.com`.
 2. Optional: add `calendlyUrl` for booking calls
 3. Optional: custom domain in repo Settings → Pages
 

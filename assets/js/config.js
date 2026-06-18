@@ -2,9 +2,8 @@
 window.SD_CONFIG = {
   siteName: 'SignalDraft',
   tagline: 'Surveys built from your market, not from a template.',
-  contactEmail: 'hello@signaldraft.com',
-  /** FormSubmit.co — replace email in URL when domain is ready */
-  formSubmitUrl: 'https://formsubmit.co/hello@signaldraft.com',
+  contactEmail: 'bryan.ralston@rocketmail.com',
+  formSubmitUrl: 'https://formsubmit.co/bryan.ralston@rocketmail.com',
   calendlyUrl: '', // optional: paste Calendly link for "Book a call"
   foundingSlots: 10,
   storageKey: 'sd_intake_v1',
