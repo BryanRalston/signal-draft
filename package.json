@@ -1,0 +1,26 @@
+{
+  "name": "signal-draft",
+  "version": "1.0.0",
+  "description": "AI-researched survey design for companies. Marketing site + intake wizard + template previews (V1). GitHub Pages hosted.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node tests/e2e.spec.mjs",
+    "test:install": "npx playwright install chromium"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BryanRalston/signal-draft.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/BryanRalston/signal-draft/issues"
+  },
+  "homepage": "https://github.com/BryanRalston/signal-draft#readme"
+}
