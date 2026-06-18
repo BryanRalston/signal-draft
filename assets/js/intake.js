@@ -262,7 +262,9 @@
       ...extra,
     }));
     localStorage.removeItem(cfg.storageKey);
-    window.location.href = 'received.html';
+    if (!extra.checkoutUrl) {
+      window.location.href = 'received.html';
+    }
   }
 
   async function submitViaApi() {
@@ -279,7 +281,12 @@
       clientToken: out.clientToken,
       projectId: out.projectId,
       dueAt: out.dueAt,
+      paymentStatus: out.paymentStatus,
+      checkoutUrl: out.checkoutUrl,
     });
+    if (out.checkoutUrl) {
+      window.location.href = out.checkoutUrl;
+    }
   }
 
   async function submitViaWeb3Forms(subject, fields) {

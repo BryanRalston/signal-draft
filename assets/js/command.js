@@ -430,6 +430,20 @@
     ).join('');
 
     document.getElementById('drawer-notes').value = p.operator_notes || '';
+    const deliverableEl = document.getElementById('drawer-deliverable');
+    if (deliverableEl) {
+      deliverableEl.value = p.deliverable_json
+        ? JSON.stringify(p.deliverable_json, null, 2)
+        : '';
+    }
+    const deliverableMsg = document.getElementById('drawer-deliverable-msg');
+    if (deliverableMsg) {
+      deliverableMsg.hidden = true;
+      if (p.portal_visible && p.deliverable_published_at) {
+        deliverableMsg.hidden = false;
+        deliverableMsg.textContent = `Published ${new Date(p.deliverable_published_at).toLocaleString()}`;
+      }
+    }
     document.getElementById('drawer-intake').innerHTML = intakeHtml(p.intake_json);
 
     const portalBase = apiBase() || window.location.origin;
@@ -475,6 +489,61 @@
     }
     await navigator.clipboard.writeText(activeProject._grokPrompt);
     showToast('Grok prompt copied');
+  }
+
+  function parseDeliverableJson() {
+    const raw = document.getElementById('drawer-deliverable')?.value?.trim();
+    if (!raw) throw new Error('Paste deliverable JSON first');
+    return JSON.parse(raw);
+  }
+
+  function showDeliverableMsg(text, isError) {
+    const el = document.getElementById('drawer-deliverable-msg');
+    if (!el) return;
+    el.hidden = false;
+    el.textContent = text;
+    el.style.color = isError ? 'var(--fail, #c45)' : 'var(--parchment-dim)';
+  }
+
+  async function validateDeliverable() {
+    try {
+      const json = parseDeliverableJson();
+      if (!json.companyName || !json.questions?.length || !json.dossier) {
+        throw new Error('Missing companyName, dossier, or questions');
+      }
+      showDeliverableMsg(`Valid — ${json.questions.length} questions, dossier present`);
+    } catch (e) {
+      showDeliverableMsg(e.message || 'Invalid JSON', true);
+    }
+  }
+
+  async function publishDeliverable() {
+    if (!activeProject) return;
+    const deliverable_json = parseDeliverableJson();
+    await api('/api/admin/project', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        id: activeProject.id,
+        deliverable_json,
+        portal_visible: true,
+      }),
+    });
+    showToast('Published to portal');
+    showDeliverableMsg('Published — client notified by email if Resend is configured');
+    await loadDashboard();
+    await openProject(activeProject.id);
+  }
+
+  async function waivePayment() {
+    if (!activeProject) return;
+    if (!confirm('Waive payment for this project?')) return;
+    await api('/api/admin/project', {
+      method: 'PATCH',
+      body: JSON.stringify({ id: activeProject.id, payment_status: 'waived' }),
+    });
+    showToast('Payment waived');
+    await loadDashboard();
+    await openProject(activeProject.id);
   }
 
   async function dismissRecommendation() {
@@ -552,6 +621,9 @@
   document.getElementById('btn-save-status')?.addEventListener('click', () => saveStatus().catch((e) => alert(e.message)));
   document.getElementById('btn-save-notes')?.addEventListener('click', () => saveNotes().catch((e) => alert(e.message)));
   document.getElementById('btn-copy-prompt')?.addEventListener('click', () => copyPrompt().catch((e) => alert(e.message)));
+  document.getElementById('btn-validate-deliverable')?.addEventListener('click', () => validateDeliverable());
+  document.getElementById('btn-publish-deliverable')?.addEventListener('click', () => publishDeliverable().catch((e) => alert(e.message)));
+  document.getElementById('btn-waive-payment')?.addEventListener('click', () => waivePayment().catch((e) => alert(e.message)));
   document.getElementById('btn-rec-done')?.addEventListener('click', () => dismissRecommendation());
   document.getElementById('client-search')?.addEventListener('input', renderClients);
   document.getElementById('client-filter')?.addEventListener('change', renderClients);

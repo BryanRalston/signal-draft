@@ -13,7 +13,8 @@
     "test:install": "npx playwright install chromium"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.49.1"
+    "@supabase/supabase-js": "^2.49.1",
+    "stripe": "^17.7.0"
   },
   "devDependencies": {
     "playwright": "^1.51.0"

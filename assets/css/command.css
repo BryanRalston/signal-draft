@@ -824,6 +824,24 @@ body.cmd-body {
 .cmd-intake-row dt { color: var(--brass); font-weight: 600; margin-bottom: 0.15rem; }
 .cmd-intake-row dd { color: var(--parchment-dim); margin: 0; white-space: pre-wrap; }
 .cmd-toast { font-size: 0.8125rem; color: var(--signal); margin-top: 0.75rem; }
+.cmd-deliverable-section {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--hairline);
+}
+.cmd-deliverable-section h3 { font-size: 0.9375rem; margin: 0 0 0.35rem; }
+.cmd-help { font-size: 0.75rem; color: var(--parchment-dim); margin: 0 0 0.5rem; }
+.cmd-textarea-mono {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  background: var(--ink);
+  color: var(--parchment);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  padding: 0.5rem;
+  resize: vertical;
+}
 
 /* Responsive */
 @media (max-width: 1024px) {

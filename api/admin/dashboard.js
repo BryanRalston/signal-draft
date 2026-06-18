@@ -27,7 +27,7 @@ async function loadGrowthState(supabase) {
 async function loadProjects(supabase) {
   const { data, error } = await supabase
     .from('projects')
-    .select('id, client_token, status, tier, due_at, company_name, contact_name, contact_email, use_case, created_at, updated_at, delivered_at, operator_notes')
+    .select('id, client_token, status, tier, due_at, company_name, contact_name, contact_email, use_case, created_at, updated_at, delivered_at, operator_notes, payment_status, portal_visible, deliverable_published_at')
     .order('created_at', { ascending: false })
     .limit(200);
   if (error) throw error;

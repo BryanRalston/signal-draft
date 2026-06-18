@@ -1,6 +1,7 @@
 const { getSupabase } = require('../../lib/supabase');
 const { setCors, handleOptions } = require('../../lib/cors');
 const { requireAdmin } = require('../../lib/auth');
+const { safeSend, sendStatusChanged } = require('../../lib/email');
 
 const VALID_STATUS = new Set([
   'received', 'researching', 'drafting', 'review', 'delivered', 'revision', 'closed',
@@ -32,7 +33,7 @@ module.exports = async (req, res) => {
     try {
       const { data, error } = await supabase
         .from('projects')
-        .select('id, client_token, status, tier, due_at, company_name, contact_name, contact_email, use_case, created_at, updated_at, delivered_at, operator_notes')
+        .select('id, client_token, status, tier, due_at, company_name, contact_name, contact_email, use_case, created_at, updated_at, delivered_at, operator_notes, payment_status, portal_visible, deliverable_published_at')
         .order('created_at', { ascending: false })
         .limit(200);
 
@@ -52,6 +53,17 @@ module.exports = async (req, res) => {
 
       if (!id) {
         res.status(400).json({ success: false, message: 'Missing project id' });
+        return;
+      }
+
+      const { data: existing, error: fetchErr } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (fetchErr || !existing) {
+        res.status(404).json({ success: false, message: 'Project not found' });
         return;
       }
 
@@ -75,10 +87,15 @@ module.exports = async (req, res) => {
         .from('projects')
         .update(patch)
         .eq('id', id)
-        .select('id, status, delivered_at, operator_notes, updated_at')
+        .select('id, status, delivered_at, operator_notes, updated_at, contact_email, contact_name, company_name, client_token')
         .single();
 
       if (error) throw error;
+
+      if (status !== undefined && status !== existing.status) {
+        await safeSend(sendStatusChanged, existing, existing.status, status);
+      }
+
       res.status(200).json({ success: true, project: data });
     } catch (e) {
       console.error('Projects patch error:', e);

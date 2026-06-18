@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
     const supabase = getSupabase();
     const { data, error } = await supabase
       .from('projects')
-      .select('company_name, contact_name, use_case, status, tier, due_at, created_at, delivered_at')
+      .select('company_name, contact_name, use_case, status, tier, due_at, created_at, delivered_at, payment_status, portal_visible, deliverable_json, deliverable_published_at')
       .eq('client_token', token)
       .single();
 
@@ -40,21 +40,27 @@ module.exports = async (req, res) => {
       return;
     }
 
-    res.status(200).json({
-      success: true,
-      project: {
-        companyName: data.company_name,
-        contactName: data.contact_name,
-        useCase: data.use_case,
-        useCaseLabel: USE_CASE_LABELS[data.use_case] || data.use_case,
-        status: data.status,
-        statusLabel: STATUS_LABELS[data.status] || data.status,
-        tier: data.tier,
-        dueAt: data.due_at,
-        createdAt: data.created_at,
-        deliveredAt: data.delivered_at,
-      },
-    });
+    const project = {
+      companyName: data.company_name,
+      contactName: data.contact_name,
+      useCase: data.use_case,
+      useCaseLabel: USE_CASE_LABELS[data.use_case] || data.use_case,
+      status: data.status,
+      statusLabel: STATUS_LABELS[data.status] || data.status,
+      tier: data.tier,
+      dueAt: data.due_at,
+      createdAt: data.created_at,
+      deliveredAt: data.delivered_at,
+      paymentStatus: data.payment_status,
+      portalVisible: data.portal_visible,
+      deliverablePublishedAt: data.deliverable_published_at,
+    };
+
+    if (data.portal_visible && data.deliverable_json) {
+      project.deliverable = data.deliverable_json;
+    }
+
+    res.status(200).json({ success: true, project });
   } catch (e) {
     console.error('Portal error:', e);
     res.status(500).json({ success: false, message: 'Server error' });

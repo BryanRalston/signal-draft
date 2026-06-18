@@ -1,6 +1,9 @@
 const { getSupabase } = require('../lib/supabase');
 const { setCors, handleOptions } = require('../lib/cors');
 const { inferTier } = require('../lib/prompt');
+const { isStripeConfigured, createCheckoutSession } = require('../lib/stripe');
+const { getTierPriceCents } = require('../lib/pricing');
+const { safeSend, sendIntakeReceived } = require('../lib/email');
 
 function readBody(req) {
   return new Promise((resolve, reject) => {
@@ -52,23 +55,27 @@ module.exports = async (req, res) => {
 
     const turnaroundHours = Number(process.env.TURNAROUND_HOURS || 48);
     const dueAt = new Date(Date.now() + turnaroundHours * 60 * 60 * 1000).toISOString();
+    const tier = inferTier(intake);
+    const stripeEnabled = isStripeConfigured();
 
     const row = {
       status: 'received',
-      tier: inferTier(intake),
+      tier,
       due_at: dueAt,
       intake_json: intake,
       contact_name: contactName,
       contact_email: contactEmail,
       company_name: companyName,
       use_case: useCase,
+      payment_status: stripeEnabled ? 'pending' : 'waived',
+      amount_cents: stripeEnabled ? getTierPriceCents(tier) : null,
     };
 
     const supabase = getSupabase();
     const { data, error } = await supabase
       .from('projects')
       .insert(row)
-      .select('id, client_token, due_at, tier')
+      .select('id, client_token, due_at, tier, payment_status, contact_name, contact_email, company_name, use_case')
       .single();
 
     if (error) {
@@ -77,12 +84,44 @@ module.exports = async (req, res) => {
       return;
     }
 
+    let checkoutUrl = null;
+    if (stripeEnabled) {
+      try {
+        const checkout = await createCheckoutSession({
+          projectId: data.id,
+          clientToken: data.client_token,
+          tier: data.tier,
+          contactEmail,
+          contactName,
+          companyName,
+        });
+        if (checkout) {
+          checkoutUrl = checkout.checkoutUrl;
+          await supabase
+            .from('projects')
+            .update({ stripe_checkout_session_id: checkout.sessionId })
+            .eq('id', data.id);
+        }
+      } catch (stripeErr) {
+        console.error('Stripe checkout error:', stripeErr);
+        await supabase
+          .from('projects')
+          .update({ payment_status: 'waived' })
+          .eq('id', data.id);
+        data.payment_status = 'waived';
+      }
+    }
+
+    await safeSend(sendIntakeReceived, { ...data, client_token: data.client_token });
+
     res.status(200).json({
       success: true,
       projectId: data.id,
       clientToken: data.client_token,
       dueAt: data.due_at,
       tier: data.tier,
+      paymentStatus: data.payment_status,
+      checkoutUrl,
     });
   } catch (e) {
     console.error('Intake error:', e);

@@ -14,7 +14,7 @@
   </div></nav>
 
   <main class="gen-layout">
-    <div class="container gen-panel received-panel">
+    <div class="container gen-panel received-panel" id="portal-status-panel">
       <p class="hero-eyebrow">Your project</p>
       <h1 id="portal-title">Loading…</h1>
       <p id="portal-summary" style="color:var(--parchment-dim)"></p>
@@ -26,9 +26,31 @@
       <p class="received-note" id="portal-note"></p>
       <p id="portal-error" class="admin-error" hidden></p>
     </div>
+
+    <div class="container preview-layout" id="portal-deliverable-panel" hidden>
+      <p class="hero-eyebrow">Your deliverable</p>
+      <h1 id="deliverable-title">Survey instrument</h1>
+      <p id="preview-meta" style="color:var(--parchment-dim);font-size:0.9375rem"></p>
+
+      <div class="compliance-bar" id="compliance-bar" aria-label="Methodology compliance"></div>
+
+      <div class="preview-tabs" role="tablist">
+        <button class="preview-tab active" role="tab" aria-selected="true" data-pane="survey">Survey questions</button>
+        <button class="preview-tab" role="tab" aria-selected="false" data-pane="dossier">Research dossier</button>
+      </div>
+
+      <div id="pane-survey" class="preview-pane active" role="tabpanel">
+        <div id="survey-content"></div>
+      </div>
+      <div id="pane-dossier" class="preview-pane" role="tabpanel">
+        <p style="color:var(--parchment-dim);font-size:0.9375rem;margin-bottom:1.5rem">Context research with cited public sources. Reviewed before delivery.</p>
+        <div id="dossier-content"></div>
+      </div>
+    </div>
   </main>
 
   <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/deliverable-render.js"></script>
   <script src="../assets/js/portal.js"></script>
 </body>
 </html>

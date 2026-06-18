@@ -22,19 +22,7 @@
     return;
   }
 
-  async function load() {
-    const url = `${apiBase()}/api/portal?token=${encodeURIComponent(token)}`;
-    const res = await fetch(url, { headers: { Accept: 'application/json' } });
-    const out = await res.json();
-
-    if (!out.success) {
-      document.getElementById('portal-title').textContent = 'Project not found';
-      document.getElementById('portal-error').hidden = false;
-      document.getElementById('portal-error').textContent = out.message || 'Could not load project.';
-      return;
-    }
-
-    const p = out.project;
+  function renderStatus(p) {
     document.getElementById('portal-title').textContent = p.companyName;
     document.getElementById('portal-summary').textContent =
       `${p.useCaseLabel} · ${p.tier} tier · Submitted ${new Date(p.createdAt).toLocaleDateString()}`;
@@ -57,7 +45,9 @@
     }).join('');
 
     const note = document.getElementById('portal-note');
-    if (p.status === 'delivered') {
+    if (p.deliverable) {
+      note.textContent = 'Your survey deliverable is available below. Reply to your confirmation email for revisions.';
+    } else if (p.status === 'delivered') {
       note.textContent = 'Your deliverable has been sent to your email. Reply to that message for revisions.';
     } else if (p.status === 'revision') {
       note.textContent = 'We are working on your revision request.';
@@ -65,6 +55,37 @@
       const due = new Date(p.dueAt);
       note.textContent = `Target delivery: ${due.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}. Questions? Email ${cfg.contactEmail}.`;
     }
+  }
+
+  function renderDeliverable(p) {
+    const panel = document.getElementById('portal-deliverable-panel');
+    if (!p.deliverable) {
+      panel.hidden = true;
+      return;
+    }
+    panel.hidden = false;
+    document.getElementById('deliverable-title').textContent = `${p.companyName} — survey instrument`;
+    if (window.SD_renderDeliverable) {
+      window.SD_renderDeliverable(p.deliverable, { companyName: p.companyName });
+    }
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function load() {
+    const url = `${apiBase()}/api/portal?token=${encodeURIComponent(token)}`;
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    const out = await res.json();
+
+    if (!out.success) {
+      document.getElementById('portal-title').textContent = 'Project not found';
+      document.getElementById('portal-error').hidden = false;
+      document.getElementById('portal-error').textContent = out.message || 'Could not load project.';
+      return;
+    }
+
+    const p = out.project;
+    renderStatus(p);
+    renderDeliverable(p);
   }
 
   load().catch(() => {

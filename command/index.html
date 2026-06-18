@@ -199,6 +199,19 @@
           <textarea id="drawer-notes" rows="3" placeholder="Internal notes…"></textarea>
         </label>
         <button type="button" class="cmd-btn cmd-btn-secondary cmd-btn-sm" id="btn-save-notes">Save notes</button>
+
+        <section class="cmd-deliverable-section">
+          <h3>Deliverable JSON</h3>
+          <p class="cmd-help">Paste Grok output matching the sample deliverable schema (dossier + questions).</p>
+          <textarea id="drawer-deliverable" rows="8" class="cmd-textarea-mono" placeholder='{"companyName":"…","label":"…","dossier":{…},"questions":[…]}'></textarea>
+          <div class="cmd-drawer-actions" style="margin-top:0.5rem">
+            <button type="button" class="cmd-btn cmd-btn-secondary cmd-btn-sm" id="btn-validate-deliverable">Validate</button>
+            <button type="button" class="cmd-btn cmd-btn-primary cmd-btn-sm" id="btn-publish-deliverable">Publish to portal</button>
+            <button type="button" class="cmd-btn cmd-btn-ghost cmd-btn-sm" id="btn-waive-payment">Waive payment</button>
+          </div>
+          <p id="drawer-deliverable-msg" class="cmd-help" hidden></p>
+        </section>
+
         <div class="cmd-intake" id="drawer-intake"></div>
         <p id="drawer-toast" class="cmd-toast" hidden></p>
       </div>

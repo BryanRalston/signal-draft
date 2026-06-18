@@ -1,4 +1,5 @@
--- SignalDraft Phase 1 — run in Supabase SQL Editor
+-- SignalDraft schema (Phase 1 + Phase 2) — run in Supabase SQL Editor
+-- Existing Phase 1 DBs: run supabase/migration-phase2.sql instead of re-running this file
 -- https://supabase.com/dashboard → SQL → New query
 
 create extension if not exists pgcrypto;
@@ -16,6 +17,14 @@ create table if not exists projects (
   company_name text not null,
   use_case text not null default 'csat',
   operator_notes text,
+  payment_status text not null default 'waived'
+    check (payment_status in ('pending', 'paid', 'waived', 'failed')),
+  stripe_checkout_session_id text,
+  stripe_payment_intent_id text,
+  amount_cents integer,
+  deliverable_json jsonb,
+  deliverable_published_at timestamptz,
+  portal_visible boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   delivered_at timestamptz
