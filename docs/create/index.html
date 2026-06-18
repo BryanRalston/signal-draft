@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Research brief — SignalDraft</title>
+  <meta name="description" content="Complete your SignalDraft research brief. We use this to research your context and design your survey instrument.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect fill='%23080c12' width='32' height='32' rx='4'/><path fill='%23b8956b' d='M8 22V10h3v12H8zm6-8v8h3v-8h-3zm6 4v4h3v-4h-3z'/></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Libre+Baskerville&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+  <nav class="site-nav"><div class="container">
+    <a href="../index.html" class="logo">Signal<span>Draft</span></a>
+    <button class="nav-toggle" aria-expanded="false" aria-label="Menu">☰</button>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><span id="save-hint" style="font-size:0.8125rem;color:var(--parchment-dim)">Saves automatically</span></li>
+    </ul>
+  </div></nav>
+
+  <main class="wizard-layout">
+    <div class="container">
+      <div class="wizard-header">
+        <h1 style="font-size:1.75rem">Research brief</h1>
+        <p style="color:var(--parchment-dim);margin:0">~8 minutes. Your answers drive the research and survey design.</p>
+        <div class="wizard-progress" id="wizard-progress" role="progressbar" aria-label="Brief progress"></div>
+        <p class="wizard-step-label" id="wizard-step-label"></p>
+      </div>
+      <div class="wizard-panel" id="wizard-panel"></div>
+      <div class="wizard-actions" style="max-width:640px">
+        <button type="button" class="btn btn-ghost" id="btn-back">Back</button>
+        <button type="button" class="btn btn-primary" id="btn-next">Continue</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/templates.js"></script>
+  <script src="../assets/js/intake.js"></script>
+  <script src="../assets/js/app.js"></script>
+</body>
+</html>
