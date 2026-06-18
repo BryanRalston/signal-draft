@@ -3,6 +3,7 @@ window.SD_TEMPLATES = {
   csat: {
     id: 'csat',
     label: 'Customer satisfaction',
+    sampleCompany: 'Acme Analytics',
     tag: 'CX / NPS',
     estMinutes: 4,
     questionCount: 12,
@@ -63,6 +64,7 @@ window.SD_TEMPLATES = {
   employee: {
     id: 'employee',
     label: 'Employee engagement',
+    sampleCompany: 'Northline Health',
     tag: 'HR / EX',
     estMinutes: 5,
     questionCount: 14,
@@ -125,6 +127,7 @@ window.SD_TEMPLATES = {
   competitive: {
     id: 'competitive',
     label: 'Competitive positioning',
+    sampleCompany: 'Brightpath CRM',
     tag: 'Strategy / PMM',
     estMinutes: 6,
     questionCount: 13,

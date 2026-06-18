@@ -7,5 +7,6 @@ window.SD_CONFIG = {
   web3formsUrl: 'https://api.web3forms.com/submit',
   calendlyUrl: '', // optional: paste Calendly link for "Book a call"
   foundingSlots: 10,
+  turnaroundHours: 48,
   storageKey: 'sd_intake_v1',
 };

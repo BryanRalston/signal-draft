@@ -142,7 +142,7 @@ async function run() {
       await p.fill('#contactEmail', EMAIL);
     }
 
-    // SUCCESS path: mock Web3Forms returning success:true → redirect to generating → preview.
+    // SUCCESS path: mock Web3Forms returning success:true → redirect to received confirmation.
     const okPage = await browser.newPage();
     await okPage.route('**/api.web3forms.com/**', (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, message: 'ok' }) }));
@@ -150,8 +150,14 @@ async function run() {
     await fillWizard(okPage);
     await okPage.click('#btn-next'); // submit
     try {
-      await okPage.waitForURL(/preview\.html\?case=employee/, { timeout: 25000 });
-      pass('Submit success (mocked): submit → generating → preview (employee)');
+      await okPage.waitForURL(/received\.html/, { timeout: 15000 });
+      pass('Submit success (mocked): submit → received confirmation');
+      const receivedText = await okPage.locator('h1').textContent();
+      if (receivedText?.includes('brief')) pass('Received page headline');
+      else fail('Received page headline');
+      const draftCleared = await okPage.evaluate(() => !localStorage.getItem('sd_intake_v1'));
+      if (draftCleared) pass('Submit success: localStorage draft cleared');
+      else fail('Submit success: draft should clear');
     } catch (e) { fail('Submit success path', e); }
     await okPage.close();
 
@@ -186,15 +192,19 @@ async function run() {
     // Restore live wizard state for downstream live-site checks.
     await page.goto(`${BASE}/create/`, { waitUntil: 'networkidle' });
 
-    // Preview page (unaffected by submit migration; localStorage already holds the brief).
-    await page.goto(`${BASE}/create/preview.html?case=employee`, { waitUntil: 'networkidle' });
-    const meta = await page.locator('#preview-meta').textContent();
-    if (meta?.includes('Resume Test Inc')) pass('Preview meta shows company');
-    else fail('Preview meta company');
-
-    const href = await page.getAttribute('#mailto-cta', 'href');
+    // Sample preview (local tree — may lag live until deploy).
+    const samplePage = await browser.newPage();
+    await samplePage.goto(`${LOCAL}/create/preview.html?case=employee&sample=1`, { waitUntil: 'networkidle' });
+    const meta = await samplePage.locator('#preview-meta').textContent();
+    if (meta?.includes('Northline Health')) pass('Sample preview shows template company');
+    else fail('Sample preview company');
+    const banner = await samplePage.locator('#sample-banner').isVisible();
+    if (banner) pass('Sample banner visible');
+    else fail('Sample banner');
+    const href = await samplePage.getAttribute('#mailto-cta', 'href');
     if (href?.includes(EMAIL)) pass('Preview mailto CTA');
     else fail('Preview mailto');
+    await samplePage.close();
 
     // Mobile
     await page.setViewportSize({ width: 390, height: 844 });

@@ -146,7 +146,7 @@
     bindPanel();
     renderProgress();
     btnBack.style.visibility = step === 0 ? 'hidden' : 'visible';
-    btnNext.textContent = step === STEPS.length - 1 ? 'Generate survey preview' : 'Continue';
+    btnNext.textContent = step === STEPS.length - 1 ? 'Submit brief' : 'Continue';
   }
 
   function bindPanel() {
@@ -278,8 +278,15 @@
       const out = await res.json();
 
       if (out && out.success === true) {
-        sessionStorage.setItem('sd_submitted', '1');
-        window.location.href = `generating.html?case=${encodeURIComponent(data.useCase || 'csat')}`;
+        sessionStorage.setItem('sd_submitted_brief', JSON.stringify({
+          companyName: data.companyName,
+          contactName: data.contactName,
+          contactEmail: data.contactEmail,
+          useCase: data.useCase || 'csat',
+          submittedAt: new Date().toISOString(),
+        }));
+        localStorage.removeItem(cfg.storageKey);
+        window.location.href = 'received.html';
         return;
       }
       throw new Error(out && out.message ? out.message : 'Submission rejected');
