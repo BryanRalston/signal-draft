@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Command — SignalDraft</title>
+  <meta name="robots" content="noindex">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Libre+Baskerville:ital@0;1&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/command.css">
+</head>
+<body class="cmd-body">
+  <div id="cmd-login" class="cmd-login-wrap">
+    <div class="cmd-login-card">
+      <div class="cmd-login-brand">
+        <span class="cmd-logo">Signal<span>Draft</span></span>
+        <span class="cmd-login-tag">Command Center</span>
+      </div>
+      <h1>Operator sign-in</h1>
+      <p>Your CRM for clients, pipeline, growth, and infra health.</p>
+      <form id="login-form" class="cmd-login-form">
+        <label for="admin-password">Password</label>
+        <input type="password" id="admin-password" autocomplete="current-password" required>
+        <button type="submit" class="cmd-btn cmd-btn-primary">Enter command</button>
+        <p id="login-error" class="cmd-error" hidden></p>
+      </form>
+    </div>
+    <div class="cmd-login-trace" aria-hidden="true"></div>
+  </div>
+
+  <div id="cmd-app" class="cmd-app" hidden>
+    <aside class="cmd-sidebar" id="cmd-sidebar">
+      <div class="cmd-sidebar-head">
+        <a href="../index.html" class="cmd-logo">Signal<span>Draft</span></a>
+        <span class="cmd-sidebar-label">Command</span>
+      </div>
+      <nav class="cmd-nav" aria-label="Command sections">
+        <button type="button" class="cmd-nav-item active" data-view="dashboard">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4v9zm10 7h6V11h-6v9zM4 20h6v-5H4v5zm10-11h6V4h-6v5z"/></svg>
+          Dashboard
+        </button>
+        <button type="button" class="cmd-nav-item" data-view="pipeline">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v2H4V6zm0 5h10v2H4v-2zm0 5h16v2H4v-2z"/></svg>
+          Pipeline
+        </button>
+        <button type="button" class="cmd-nav-item" data-view="clients">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          Clients
+        </button>
+        <button type="button" class="cmd-nav-item" data-view="growth">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
+          Growth
+        </button>
+      </nav>
+      <div class="cmd-sidebar-foot">
+        <div class="cmd-phase-pill" id="sidebar-phase">Phase 1</div>
+        <button type="button" class="cmd-btn cmd-btn-ghost cmd-btn-sm" id="btn-logout">Sign out</button>
+      </div>
+    </aside>
+
+    <div class="cmd-main">
+      <header class="cmd-topbar">
+        <button type="button" class="cmd-menu-toggle" id="btn-menu" aria-label="Toggle menu">☰</button>
+        <div class="cmd-topbar-title">
+          <h1 id="view-title">Dashboard</h1>
+          <p id="view-subtitle">Growth Operator feed · live pipeline</p>
+        </div>
+        <div class="cmd-topbar-actions">
+          <span class="cmd-sync" id="sync-status">—</span>
+          <button type="button" class="cmd-btn cmd-btn-secondary cmd-btn-sm" id="btn-refresh">Refresh</button>
+        </div>
+      </header>
+
+      <div class="cmd-content">
+        <!-- Dashboard -->
+        <section id="view-dashboard" class="cmd-view active">
+          <div class="cmd-hero">
+            <div class="cmd-hero-copy">
+              <p class="cmd-eyebrow">North star</p>
+              <h2 id="north-star">—</h2>
+              <p class="cmd-hero-phase" id="hero-phase-badge"></p>
+            </div>
+            <div class="cmd-hero-trace" aria-hidden="true"></div>
+          </div>
+
+          <div class="cmd-metrics" id="metric-row"></div>
+
+          <article class="cmd-rec-card" id="rec-card">
+            <div class="cmd-rec-label">Today's recommendation</div>
+            <p class="cmd-rec-text" id="rec-text">Loading…</p>
+            <div class="cmd-rec-actions">
+              <button type="button" class="cmd-btn cmd-btn-primary cmd-btn-sm" id="btn-rec-done">Mark done</button>
+            </div>
+          </article>
+
+          <div class="cmd-grid-2">
+            <section class="cmd-panel">
+              <h3>Blockers</h3>
+              <div id="blockers-list" class="cmd-blockers"></div>
+            </section>
+            <section class="cmd-panel">
+              <h3>Infra pulse</h3>
+              <div id="pulse-grid" class="cmd-pulse-grid"></div>
+            </section>
+          </div>
+
+          <section class="cmd-panel">
+            <h3>Phase gates</h3>
+            <div id="phase-gates" class="cmd-gates"></div>
+          </section>
+
+          <section class="cmd-panel">
+            <div class="cmd-panel-head">
+              <h3>Recent clients</h3>
+              <button type="button" class="cmd-link" data-goto="clients">View all</button>
+            </div>
+            <div id="recent-clients" class="cmd-recent"></div>
+          </section>
+        </section>
+
+        <!-- Pipeline -->
+        <section id="view-pipeline" class="cmd-view">
+          <div class="cmd-pipeline-stats" id="pipeline-stats"></div>
+          <div class="cmd-board" id="pipeline-board"></div>
+        </section>
+
+        <!-- Clients -->
+        <section id="view-clients" class="cmd-view">
+          <div class="cmd-clients-toolbar">
+            <input type="search" id="client-search" class="cmd-search" placeholder="Search company, contact, email…" autocomplete="off">
+            <select id="client-filter" class="cmd-select">
+              <option value="">All statuses</option>
+            </select>
+          </div>
+          <div class="cmd-table-wrap">
+            <table class="cmd-table" id="clients-table">
+              <thead>
+                <tr>
+                  <th>Company</th>
+                  <th>Contact</th>
+                  <th>Use case</th>
+                  <th>Status</th>
+                  <th>Due</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="clients-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Growth -->
+        <section id="view-growth" class="cmd-view">
+          <div class="cmd-grid-2">
+            <section class="cmd-panel">
+              <h3>Metrics</h3>
+              <dl class="cmd-dl" id="growth-metrics"></dl>
+            </section>
+            <section class="cmd-panel">
+              <h3>Founding program</h3>
+              <div class="cmd-founding" id="founding-widget"></div>
+            </section>
+          </div>
+          <section class="cmd-panel">
+            <h3>Recommendation history</h3>
+            <div id="rec-history" class="cmd-rec-history"></div>
+          </section>
+          <section class="cmd-panel">
+            <h3>All phase gates</h3>
+            <div id="growth-gates" class="cmd-gates"></div>
+          </section>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client drawer -->
+  <div id="cmd-drawer" class="cmd-drawer" hidden>
+    <div class="cmd-drawer-backdrop" data-close></div>
+    <aside class="cmd-drawer-panel" role="dialog" aria-labelledby="drawer-title">
+      <header class="cmd-drawer-head">
+        <div>
+          <h2 id="drawer-title">Client</h2>
+          <p id="drawer-meta" class="cmd-drawer-meta"></p>
+        </div>
+        <button type="button" class="cmd-drawer-close" data-close aria-label="Close">×</button>
+      </header>
+      <div class="cmd-drawer-body">
+        <div class="cmd-drawer-actions">
+          <label class="cmd-field">
+            Status
+            <select id="drawer-status" class="cmd-select"></select>
+          </label>
+          <button type="button" class="cmd-btn cmd-btn-primary cmd-btn-sm" id="btn-save-status">Save status</button>
+          <button type="button" class="cmd-btn cmd-btn-secondary cmd-btn-sm" id="btn-copy-prompt">Copy Grok prompt</button>
+          <a href="#" id="btn-portal-link" class="cmd-btn cmd-btn-ghost cmd-btn-sm" target="_blank" rel="noopener">Client portal</a>
+        </div>
+        <label class="cmd-field">
+          Operator notes
+          <textarea id="drawer-notes" rows="3" placeholder="Internal notes…"></textarea>
+        </label>
+        <button type="button" class="cmd-btn cmd-btn-secondary cmd-btn-sm" id="btn-save-notes">Save notes</button>
+        <div class="cmd-intake" id="drawer-intake"></div>
+        <p id="drawer-toast" class="cmd-toast" hidden></p>
+      </div>
+    </aside>
+  </div>
+
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/command.js"></script>
+</body>
+</html>

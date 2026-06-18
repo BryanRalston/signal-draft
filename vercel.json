@@ -4,11 +4,12 @@
   "outputDirectory": ".",
   "rewrites": [
     { "source": "/admin", "destination": "/admin/index.html" },
+    { "source": "/command", "destination": "/command/index.html" },
     { "source": "/portal", "destination": "/portal/index.html" }
   ],
   "headers": [
     {
-      "source": "/admin/(.*)",
+      "source": "/(admin|command)/(.*)",
       "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }]
     },
     {

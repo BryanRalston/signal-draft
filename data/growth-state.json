@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "project_id": "signal-draft",
+  "phase": "1-activation",
+  "north_star": "First paying founding client delivered within 48h SLA",
+  "note": "Static fallback for local preview. Live CRM reads from /api/admin/dashboard when Vercel + Supabase are active."
+}

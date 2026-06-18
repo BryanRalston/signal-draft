@@ -2,79 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Operator — SignalDraft</title>
-  <meta name="robots" content="noindex">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Libre+Baskerville&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/css/main.css">
+  <meta http-equiv="refresh" content="0;url=../command/">
+  <title>Redirect — SignalDraft Command</title>
+  <script>location.replace('../command/');</script>
 </head>
 <body>
-  <nav class="site-nav"><div class="container">
-    <a href="../index.html" class="logo">Signal<span>Draft</span></a>
-    <span style="font-size:0.8125rem;color:var(--parchment-dim)">Operator</span>
-  </div></nav>
-
-  <main class="admin-layout">
-    <div class="container">
-      <div id="admin-login" class="admin-login">
-        <h1>Operator sign-in</h1>
-        <p style="color:var(--parchment-dim)">Manage client briefs, status, and Grok prompts.</p>
-        <form id="login-form" class="admin-login-form">
-          <div class="form-group">
-            <label for="admin-password">Password</label>
-            <input type="password" id="admin-password" autocomplete="current-password" required>
-          </div>
-          <button type="submit" class="btn btn-primary">Sign in</button>
-          <p id="login-error" class="admin-error" hidden></p>
-        </form>
-      </div>
-
-      <div id="admin-app" hidden>
-        <div class="admin-toolbar">
-          <div>
-            <h1 style="font-size:1.5rem;margin:0">Projects</h1>
-            <p id="admin-stats" style="color:var(--parchment-dim);font-size:0.875rem;margin:0.25rem 0 0"></p>
-          </div>
-          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-            <button type="button" class="btn btn-secondary" id="btn-refresh">Refresh</button>
-            <button type="button" class="btn btn-ghost" id="btn-logout">Sign out</button>
-          </div>
-        </div>
-
-        <div class="admin-board" id="admin-board"></div>
-      </div>
-    </div>
-  </main>
-
-  <div id="admin-modal" class="admin-modal" hidden>
-    <div class="admin-modal-backdrop" data-close></div>
-    <div class="admin-modal-panel" role="dialog" aria-labelledby="modal-title">
-      <button type="button" class="admin-modal-close" data-close aria-label="Close">×</button>
-      <h2 id="modal-title">Project</h2>
-      <p id="modal-meta" style="color:var(--parchment-dim);font-size:0.875rem"></p>
-
-      <div class="admin-modal-actions">
-        <label>
-          Status
-          <select id="modal-status" class="admin-select"></select>
-        </label>
-        <button type="button" class="btn btn-primary" id="btn-save-status">Save status</button>
-        <button type="button" class="btn btn-secondary" id="btn-copy-prompt">Copy Grok prompt</button>
-        <a href="#" id="btn-portal-link" class="btn btn-ghost" target="_blank" rel="noopener">Client portal</a>
-      </div>
-
-      <div class="form-group" style="margin-top:1rem">
-        <label for="modal-notes">Operator notes</label>
-        <textarea id="modal-notes" rows="3" placeholder="Internal notes…"></textarea>
-        <button type="button" class="btn btn-secondary" id="btn-save-notes" style="margin-top:0.5rem">Save notes</button>
-      </div>
-
-      <div class="admin-intake" id="modal-intake"></div>
-      <p id="modal-toast" class="admin-toast" hidden></p>
-    </div>
-  </div>
-
-  <script src="../assets/js/config.js"></script>
-  <script src="../assets/js/admin.js"></script>
+  <p>Redirecting to <a href="../command/">Command Center</a>…</p>
 </body>
 </html>

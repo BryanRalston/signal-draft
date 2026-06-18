@@ -41,4 +41,17 @@ create trigger projects_updated_at
 
 alter table projects enable row level security;
 
+-- Growth Operator state (CRM dashboard, blockers, phase gates)
+create table if not exists growth_state (
+  id text primary key default 'signal-draft',
+  state_json jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
+insert into growth_state (id, state_json)
+values ('signal-draft', '{}'::jsonb)
+on conflict (id) do nothing;
+
+alter table growth_state enable row level security;
+
 -- API uses service_role key server-side only; no public policies.

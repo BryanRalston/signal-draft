@@ -11,7 +11,7 @@ AI-researched survey design for companies. Marketing site + intake wizard + samp
 1. **Customer** completes the research brief (~8 min) at `/create/`
 2. **API** saves project to Supabase (`POST /api/intake`); Web3Forms emails as fallback
 3. **Customer** sees confirmation + optional `/portal/?token=` status link
-4. **Bryan** uses `/admin/` — kanban, copy Grok prompt, update status, deliver
+4. **Bryan** uses `/command/` — CRM dashboard, pipeline, copy Grok prompt, deliver
 
 Sample outputs: `/create/preview.html?case=csat&sample=1`
 

@@ -33,7 +33,7 @@ Intake will POST to Vercel API; admin + portal live on Vercel.
 
 | URL | Purpose |
 |-----|---------|
-| `/admin/` | Sign in → kanban → open project → **Copy Grok prompt** → update status |
+| `/command/` | Sign in → CRM dashboard → pipeline / clients → **Copy Grok prompt** → update status |
 | `/portal/?token=…` | Client status page (link from confirmation email / received page) |
 
 ### Daily flow
