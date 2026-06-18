@@ -1,43 +1,33 @@
 # Deploying SignalDraft to GitHub Pages
 
-## Live URL (once build succeeds)
+## Live URL
 
 https://bryanralston.github.io/signal-draft/
 
-## Current status
+## How deploys work
 
-The repo is pushed to **BryanRalston/signal-draft** and Pages is enabled, but the legacy Jekyll build returned `Page build failed`. This usually means one of:
+Deploys are automated via **GitHub Actions** (`.github/workflows/deploy.yml`).
+Every push to `main` builds and publishes to GitHub Pages — no Jekyll, no manual
+steps. Repo **Settings → Pages → Build and deployment** is set to **GitHub Actions**.
 
-1. **GitHub Pages not enabled on your account** — GitHub → Settings → Pages → verify Pages is allowed
-2. **First deploy still propagating** — wait 5–10 minutes and refresh
-3. **Need GitHub Actions deploy instead** — preferred for static sites (no Jekyll)
-
-## Fix: enable Actions-based deploy (recommended)
-
-Run in PowerShell **interactively** (browser auth required):
-
-```powershell
-gh auth refresh -h github.com -s workflow
-```
-
-Then from the repo:
+To ship a change:
 
 ```powershell
 cd C:\Users\bryan\signal-draft
-git add .github/workflows/deploy.yml
-git commit -m "Add GitHub Actions Pages deploy"
+git add -A
+git commit -m "your message"
 git push origin main
 ```
 
-In GitHub repo **Settings → Pages → Build and deployment**, set source to **GitHub Actions**.
+Watch the deploy:
 
-## Fix: legacy deploy from main
+```powershell
+gh run watch $(gh run list --limit 1 --json databaseId -q '.[0].databaseId') --exit-status
+```
 
-Settings → Pages → Deploy from branch **main** / **/ (root)**.
+It goes live ~1 minute after the run completes.
 
-Ensure `.nojekyll` exists at repo root (it does — disables Jekyll).
-
-## Local preview (works now)
+## Local preview
 
 ```powershell
 cd C:\Users\bryan\signal-draft
@@ -46,9 +36,25 @@ python -m http.server 8080
 
 Open http://localhost:8080
 
-## Before taking client briefs
+## Lead capture (Web3Forms)
 
-Edit `assets/js/config.js`:
+Brief submissions post to **Web3Forms** from the browser (`assets/js/intake.js`).
+Config lives in `assets/js/config.js`:
 
-- `contactEmail` — your real email
-- `formSubmitUrl` — `https://formsubmit.co/YOUR@EMAIL.com` (confirm via FormSubmit activation email)
+- `contactEmail` — where the mailto fallback and "Book a call" point
+- `web3formsKey` — Web3Forms access key (from web3forms.com signup email)
+- `web3formsUrl` — `https://api.web3forms.com/submit`
+
+On a failed send, the wizard keeps the draft in localStorage and shows a
+`mailto:` fallback, so no lead is lost.
+
+> **Testing note:** Web3Forms sits behind Cloudflare, which returns **403 to
+> curl and headless browsers**. The live form will look broken to automated
+> tests even when it works — verify with a real (headed) browser. The E2E
+> suite mocks the endpoint instead of hitting it.
+
+## Optional before scaling
+
+- `calendlyUrl` in `config.js` — set it to make "Book a call" open Calendly
+  instead of email (falls back to mailto when empty)
+- Custom domain — repo **Settings → Pages → Custom domain**

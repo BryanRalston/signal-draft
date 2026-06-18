@@ -4,7 +4,7 @@ AI-researched survey design for companies. Marketing site + intake wizard + temp
 
 **Live:** https://bryanralston.github.io/signal-draft/
 
-> Pages enabled via legacy deploy from `main`. The GitHub Actions workflow in `.github/workflows/` requires `workflow` OAuth scope to push — add it in `gh auth refresh -s workflow` if you want CI deploys.
+> Deploys are automated via GitHub Actions (`.github/workflows/deploy.yml`) on every push to `main`. See `DEPLOY.md`.
 
 ## V1 includes
 
@@ -13,12 +13,12 @@ AI-researched survey design for companies. Marketing site + intake wizard + temp
 - Generating animation → preview with methodology rails
 - 3 use-case templates: CSAT, employee engagement, competitive positioning
 - Privacy + Terms + About pages
-- FormSubmit.co email on brief completion
+- Web3Forms email on brief completion (with mailto fallback if a send fails)
 
 ## Before launch checklist
 
-1. FormSubmit activation: submit a test brief once; click the activation link FormSubmit emails to `bryan.ralston@rocketmail.com`.
-2. Optional: add `calendlyUrl` for booking calls
+1. ✅ Lead capture live via Web3Forms (`web3formsKey` in `assets/js/config.js`)
+2. Optional: set `calendlyUrl` to make "Book a call" open Calendly (falls back to email)
 3. Optional: custom domain in repo Settings → Pages
 
 ## Local preview
