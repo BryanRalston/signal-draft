@@ -2,7 +2,9 @@
 
 AI-researched survey design for companies. Marketing site + intake wizard + template previews (V1). GitHub Pages hosted.
 
-**Live:** https://bryanralston.github.io/signal-draft/ (after deploy)
+**Live:** https://bryanralston.github.io/signal-draft/
+
+> Pages enabled via legacy deploy from `main`. The GitHub Actions workflow in `.github/workflows/` requires `workflow` OAuth scope to push — add it in `gh auth refresh -s workflow` if you want CI deploys.
 
 ## V1 includes
 
