@@ -264,11 +264,16 @@
       ...fields,
     };
 
+    // FormData (multipart) keeps this a "simple" request — no CORS preflight,
+    // which Web3Forms' endpoint requires for browser submissions.
+    const formData = new FormData();
+    Object.entries(body).forEach(([k, v]) => formData.append(k, v));
+
     try {
       const res = await fetch(cfg.web3formsUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(body),
+        headers: { Accept: 'application/json' },
+        body: formData,
       });
       const out = await res.json();
 
