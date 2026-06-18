@@ -44,6 +44,16 @@ When Web3Forms email arrives:
 6. **Deliver** — PDF and/or export file; email client at reply-to address from intake.
 7. **Revisions** — per tier (1 or 2 rounds).
 
+## Methodology rules (non-negotiable — learned from dry runs)
+These prevent the traps that quietly ruin a deliverable. Apply every time:
+
+1. **Pin pricing to a stated volume tier.** Many SaaS price on two axes (feature/seat tier *and* usage volume, often via a slider). A Van Westendorp or willingness-to-pay question on "monthly price" without fixing the volume produces garbage — respondents anchor to different volumes. Always state the exact tier + volume in the question stem (e.g. "$9/mo for ~10k pageviews, 1 site").
+2. **Market-size figures are directional, never precise.** Analyst numbers (Mordor, Allied, Gartner, Data Bridge) live behind paywalls and conflict with each other. Cite the *range*, name the firms, and explicitly flag as directional. Never assert a single precise figure — false precision undermines the "real research" moat.
+3. **Verify before you cite.** Every factual claim needs a real, fetched source. A vendor's own content marketing (e.g. their "is competitor X illegal?" blog) is a legitimate source for a regulatory/narrative angle, but must be corroborated by an independent source before it goes in the dossier. No fabricated stats or sources — ever.
+4. **Benchmark perceptual comparisons against the single dominant incumbent, not the full set.** Semantic-differential / head-to-head questions ("vs. GA4 on ease of use") should target the one market leader. Let aided-awareness and consideration-set questions carry the multi-brand load, or the survey balloons past 20 questions.
+5. **Watch length — survey fatigue is the #1 headwind.** Target ≤6 min. Multi-part validated instruments (e.g. the 4-part Van Westendorp) count as **one** question for the count but cost real respondent effort — budget accordingly and make the lowest-value open-ends optional if the estimate runs long.
+6. **Flag thin public footprint early.** This model works best on companies/competitors with public pricing and positioning. If a brief's subject is stealth, pre-launch, or enterprise-only, the research will be materially harder — tell the client and scope expectations before drafting.
+
 Sample structure reference: `assets/js/templates.js` and `create/preview.html?case=<usecase>&sample=1`.
 
 ## Config
