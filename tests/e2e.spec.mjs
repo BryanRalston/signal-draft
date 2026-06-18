@@ -1,4 +1,8 @@
 import { chromium } from 'playwright';
+import { createServer } from 'http';
+import { readFile } from 'fs/promises';
+import { fileURLToPath } from 'url';
+import { dirname, join, normalize } from 'path';
 
 const BASE = 'https://bryanralston.github.io/signal-draft';
 const EMAIL = 'bryan.ralston@rocketmail.com';
@@ -8,9 +12,36 @@ const passes = [];
 function pass(msg) { passes.push(msg); console.log('PASS:', msg); }
 function fail(msg, err) { failures.push({ msg, err: err?.message || String(err) }); console.error('FAIL:', msg, err?.message || ''); }
 
+// ---- Local static server: serves the working tree so submit-flow tests run
+// against the CURRENT code (not the deployed build). Lets us mock Web3Forms. ----
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml' };
+
+function startServer() {
+  return new Promise((resolve) => {
+    const server = createServer(async (req, res) => {
+      try {
+        let p = decodeURIComponent(req.url.split('?')[0]);
+        if (p.endsWith('/')) p += 'index.html';
+        const filePath = normalize(join(ROOT, p));
+        if (!filePath.startsWith(ROOT)) { res.writeHead(403); res.end(); return; }
+        const buf = await readFile(filePath);
+        const ext = filePath.slice(filePath.lastIndexOf('.'));
+        res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
+        res.end(buf);
+      } catch {
+        res.writeHead(404); res.end('Not found');
+      }
+    });
+    server.listen(0, '127.0.0.1', () => resolve(server));
+  });
+}
+
 async function run() {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
+  const server = await startServer();
+  const LOCAL = `http://127.0.0.1:${server.address().port}`;
 
   try {
     await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
@@ -23,9 +54,11 @@ async function run() {
     if ((await page.locator(`a[href^="mailto:${EMAIL}"]`).count()) >= 2) pass('Landing mailto links');
     else fail('Landing mailto links');
 
-    const configText = await (await page.goto(`${BASE}/assets/js/config.js`)).text();
-    if (configText.includes(EMAIL) && configText.includes('formsubmit.co')) pass('Live config.js');
-    else fail('Live config.js');
+    const configText = await (await page.goto(`${LOCAL}/assets/js/config.js`)).text();
+    if (configText.includes(EMAIL) && configText.includes('web3formsUrl') && configText.includes('api.web3forms.com')) pass('config.js has Web3Forms config');
+    else fail('config.js Web3Forms config');
+    if (!configText.includes('formsubmit.co') && !configText.includes('formSubmitUrl')) pass('config.js no longer references FormSubmit');
+    else fail('config.js still references FormSubmit');
 
     for (const path of ['about.html', 'privacy.html', 'terms.html']) {
       await page.goto(`${BASE}/${path}`);
@@ -89,16 +122,72 @@ async function run() {
     if (companyName === 'Resume Test Inc') pass('Back navigation preserves companyName');
     else fail('Back nav companyName', new Error(companyName));
 
-    // Full submit flow
-    await page.click('#btn-next');
-    await page.click('#btn-next');
-    await page.click('#btn-next');
-    await page.click('#btn-next');
-    await page.click('#btn-next');
-    await page.click('#btn-next');
-    await page.waitForURL(/preview\.html\?case=employee/, { timeout: 25000 });
-    pass('Full flow: submit → generating → preview (employee)');
+    // ---- Submit flow against LOCAL working tree, with mocked Web3Forms ----
+    async function fillWizard(p) {
+      await p.evaluate(() => localStorage.removeItem('sd_intake_v1'));
+      await p.reload({ waitUntil: 'networkidle' });
+      await p.locator('.chip[data-value="employee"]').click();
+      await p.click('#btn-next');
+      await p.fill('#companyName', 'Resume Test Inc');
+      await p.fill('#industry', 'Healthcare');
+      await p.click('#btn-next');
+      await p.fill('#businessObjective', 'Reduce turnover.');
+      await p.fill('#researchObjectives', 'Engagement baseline and retention drivers.');
+      await p.click('#btn-next');
+      await p.fill('#audience', 'All employees US');
+      await p.click('#btn-next');
+      await p.fill('#decisionRules', 'If engagement below 40%, launch manager training.');
+      await p.click('#btn-next');
+      await p.fill('#contactName', 'Resume User');
+      await p.fill('#contactEmail', EMAIL);
+    }
 
+    // SUCCESS path: mock Web3Forms returning success:true → redirect to generating → preview.
+    const okPage = await browser.newPage();
+    await okPage.route('**/api.web3forms.com/**', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, message: 'ok' }) }));
+    await okPage.goto(`${LOCAL}/create/`, { waitUntil: 'networkidle' });
+    await fillWizard(okPage);
+    await okPage.click('#btn-next'); // submit
+    try {
+      await okPage.waitForURL(/preview\.html\?case=employee/, { timeout: 25000 });
+      pass('Submit success (mocked): submit → generating → preview (employee)');
+    } catch (e) { fail('Submit success path', e); }
+    await okPage.close();
+
+    // FAILURE path: mock Web3Forms returning success:false → no redirect, error + mailto shown.
+    const badPage = await browser.newPage();
+    await badPage.route('**/api.web3forms.com/**', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: false, message: 'rejected' }) }));
+    await badPage.goto(`${LOCAL}/create/`, { waitUntil: 'networkidle' });
+    await fillWizard(badPage);
+    await badPage.click('#btn-next'); // submit
+    await badPage.waitForSelector('.submit-error', { timeout: 10000 }).catch(() => {});
+    const errVisible = await badPage.locator('.submit-error').isVisible().catch(() => false);
+    if (errVisible) pass('Submit failure: visible error message rendered');
+    else fail('Submit failure: error message');
+
+    const mailtoHref = await badPage.getAttribute('#submit-error-mailto', 'href').catch(() => null);
+    if (mailtoHref && mailtoHref.startsWith(`mailto:${EMAIL}`) && mailtoHref.includes('Resume%20Test%20Inc')) pass('Submit failure: mailto fallback link with brief');
+    else fail('Submit failure: mailto fallback', new Error(String(mailtoHref)));
+
+    if (!badPage.url().includes('generating')) pass('Submit failure: no navigation to generating');
+    else fail('Submit failure: should not navigate');
+
+    const draftIntact = await badPage.evaluate(() => !!localStorage.getItem('sd_intake_v1'));
+    if (draftIntact) pass('Submit failure: localStorage draft preserved');
+    else fail('Submit failure: draft cleared');
+
+    const nextEnabled = await badPage.isEnabled('#btn-next');
+    if (nextEnabled) pass('Submit failure: Next button re-enabled for retry');
+    else fail('Submit failure: Next still disabled');
+    await badPage.close();
+
+    // Restore live wizard state for downstream live-site checks.
+    await page.goto(`${BASE}/create/`, { waitUntil: 'networkidle' });
+
+    // Preview page (unaffected by submit migration; localStorage already holds the brief).
+    await page.goto(`${BASE}/create/preview.html?case=employee`, { waitUntil: 'networkidle' });
     const meta = await page.locator('#preview-meta').textContent();
     if (meta?.includes('Resume Test Inc')) pass('Preview meta shows company');
     else fail('Preview meta company');
@@ -140,6 +229,7 @@ async function run() {
     fail('Unexpected', e);
   } finally {
     await browser.close();
+    server.close();
   }
 
   console.log(`\n=== SUMMARY: ${passes.length} passed, ${failures.length} failed ===`);

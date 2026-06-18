@@ -137,7 +137,7 @@
         html += field('contactEmail', 'Email', 'email', { required: true });
         html += field('contactCompany', 'Company', 'text');
         html += field('notes', 'Anything else?', 'textarea', { rows: 2 });
-        html += `<div class="honeypot" aria-hidden="true"><input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></div>`;
+        html += `<div class="honeypot" aria-hidden="true"><input type="text" name="botcheck" tabindex="-1" autocomplete="off"></div>`;
         html += `<p class="help" style="margin-top:1rem">By submitting, you agree to our <a href="../privacy.html">Privacy Policy</a>. AI-assisted draft — human-reviewed before delivery.</p>`;
         break;
     }
@@ -171,7 +171,7 @@
       });
     });
 
-    panelEl.querySelectorAll('input:not([name="_gotcha"]), textarea').forEach((el) => {
+    panelEl.querySelectorAll('input:not([name="botcheck"]), textarea').forEach((el) => {
       el.addEventListener('input', () => {
         data[el.name] = el.value;
         save();
@@ -209,24 +209,81 @@
     return true;
   }
 
+  function flatten(obj) {
+    // Brief fields with arrays joined for readable transport.
+    const out = {};
+    Object.entries(obj).forEach(([k, v]) => {
+      out[k] = Array.isArray(v) ? v.join(', ') : (v ?? '');
+    });
+    return out;
+  }
+
+  function buildMailto(subject, fields) {
+    const lines = Object.entries(fields).map(([k, v]) => `${k}: ${v}`);
+    const body = `SignalDraft research brief\n\n${lines.join('\n')}`;
+    return `mailto:${cfg.contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }
+
+  function showSubmitError(subject, fields) {
+    const mailto = buildMailto(subject, fields);
+    const err = document.createElement('div');
+    err.className = 'submit-error';
+    err.setAttribute('role', 'alert');
+    err.setAttribute('aria-live', 'assertive');
+    err.style.cssText = 'margin-top:1rem;padding:1rem;border:1px solid var(--brass,#b8956b);border-radius:6px;background:rgba(184,149,107,0.08)';
+    err.innerHTML = `<strong>We could not send your brief.</strong>
+      <p style="margin:0.5rem 0 0">Your answers are still saved in this browser, so nothing is lost. Please try again, or send it to us directly.</p>
+      <p style="margin:0.75rem 0 0"><a class="btn btn-primary" id="submit-error-mailto" href="${mailto}">Email your brief directly</a></p>`;
+    // Replace any prior error before adding a fresh one.
+    const prev = panelEl.querySelector('.submit-error');
+    if (prev) prev.remove();
+    panelEl.appendChild(err);
+    err.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
   async function submitBrief() {
     save();
-    const payload = { ...data, submittedAt: new Date().toISOString() };
+
+    // Honeypot: if a bot filled the hidden botcheck field, silently drop.
+    const botField = panelEl.querySelector('input[name="botcheck"]');
+    if (botField && botField.value) return;
+
+    const subject = `SignalDraft brief: ${data.companyName || 'New'}`;
+    const fields = flatten({ ...data, submittedAt: new Date().toISOString() });
+
+    const prevLabel = btnNext.textContent;
+    btnNext.disabled = true;
+    btnNext.textContent = 'Sending…';
+
+    const body = {
+      access_key: cfg.web3formsKey,
+      subject,
+      from_name: data.contactName || 'SignalDraft intake',
+      replyto: data.contactEmail,
+      botcheck: '',
+      ...fields,
+    };
 
     try {
-      const formData = new FormData();
-      formData.append('_subject', `SignalDraft brief: ${data.companyName || 'New'}`);
-      formData.append('_template', 'table');
-      formData.append('_captcha', 'false');
-      Object.entries(payload).forEach(([k, v]) => {
-        formData.append(k, Array.isArray(v) ? v.join(', ') : String(v ?? ''));
+      const res = await fetch(cfg.web3formsUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(body),
       });
+      const out = await res.json();
 
-      await fetch(cfg.formSubmitUrl, { method: 'POST', body: formData, mode: 'no-cors' });
-    } catch (_) { /* local/demo ok */ }
-
-    sessionStorage.setItem('sd_submitted', '1');
-    window.location.href = `generating.html?case=${encodeURIComponent(data.useCase || 'csat')}`;
+      if (out && out.success === true) {
+        sessionStorage.setItem('sd_submitted', '1');
+        window.location.href = `generating.html?case=${encodeURIComponent(data.useCase || 'csat')}`;
+        return;
+      }
+      throw new Error(out && out.message ? out.message : 'Submission rejected');
+    } catch (_) {
+      // Do NOT redirect, do NOT clear the draft. Show recoverable fallback.
+      btnNext.disabled = false;
+      btnNext.textContent = prevLabel;
+      showSubmitError(subject, fields);
+    }
   }
 
   btnBack?.addEventListener('click', () => {
